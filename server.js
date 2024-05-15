@@ -143,5 +143,5 @@ app.post('/api/initCard', async (req, res) => {
 
 // Start server
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
+    console.log(`Server running at http://192.168.1.94:${port}/`);
 });
