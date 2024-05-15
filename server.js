@@ -3,21 +3,22 @@ const bodyParser = require('body-parser');
 const { NFC } = require('nfc-pcsc');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 let readerInstance = null;
 let cardUID = null;
 let cardBalance = null;
 
-// Set up body-parser middleware
+// Middleware pour parser les requêtes JSON
 app.use(bodyParser.json());
 
-// Serve static files from the 'public' directory
+// Servir les fichiers statiques depuis le répertoire "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize NFC
+// Initialiser NFC
 const nfc = new NFC();
 
 nfc.on('reader', reader => {
@@ -62,7 +63,7 @@ nfc.on('error', err => {
     console.error('Erreur NFC:', err);
 });
 
-// API Routes
+// Routes de l'API
 app.get('/api/status', (req, res) => {
     res.json({
         readerConnected: !!readerInstance,
@@ -74,7 +75,7 @@ app.get('/api/status', (req, res) => {
 app.post('/api/increment', async (req, res) => {
     const { amount } = req.body;
     if (!cardUID || !cardBalance) {
-        return res.status(400).json({ error: 'No card present or card balance not available.' });
+        return res.status(400).json({ error: 'Pas de carte présente ou balance invalide.' });
     }
     try {
         const keyType = 0x60;
@@ -87,18 +88,18 @@ app.post('/api/increment', async (req, res) => {
         await readerInstance.write(blockNumber, data, 16);
         res.json({ success: true, newBalance: cardBalance });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to increment balance.', details: err.message });
+        res.status(500).json({ error: 'Impossible d\'incrémenter le solde.', details: err.message });
     }
 });
 
 app.post('/api/decrement', async (req, res) => {
     const { amount } = req.body;
     if (!cardUID || !cardBalance) {
-        return res.status(400).json({ error: 'No card present or card balance not available.' });
+        return res.status(400).json({ error: 'Pas de carte présente ou balance invalide.' });
     }
     try {
         if (cardBalance < amount) {
-            return res.status(400).json({ error: 'Insufficient balance.' });
+            return res.status(400).json({ error: 'Solde insuffisant' });
         }
         const keyType = 0x60;
         const key = Buffer.from('FFFFFFFFFFFF', 'hex');
@@ -110,38 +111,21 @@ app.post('/api/decrement', async (req, res) => {
         await readerInstance.write(blockNumber, data, 16);
         res.json({ success: true, newBalance: cardBalance });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to decrement balance.', details: err.message });
+        res.status(500).json({ error: 'Erreur dans la décrémentation.', details: err.message });
     }
 });
 
-app.post('/api/initCard', async (req, res) => {
-    if (!readerInstance) {
-        return res.status(400).json({ error: 'No NFC reader connected.' });
-    }
-    try {
-        const keyType = 0x60;
-        const defaultKey = Buffer.from('FFFFFFFFFFFF', 'hex');
-        const newKey = Buffer.from('your_new_key_here', 'hex'); // Vous devez générer cette clé quelque part
-        const blockNumber = 8; // Bloc à initialiser
-        const initialBalance = 100; // Solde initial
-        const data = Buffer.alloc(16);
-        data.writeUInt32BE(initialBalance, 0);
-
-        // Authentifier et écrire le solde initial
-        await readerInstance.authenticate(blockNumber, keyType, defaultKey);
-        await readerInstance.write(blockNumber, data, 16);
-
-        // Authentifier et écrire la nouvelle clé
-        await readerInstance.authenticate(9, keyType, defaultKey); // Modifier pour le bloc de trailer si nécessaire
-        await readerInstance.write(9, newKey, 16);
-
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to initialize card.', details: err.message });
-    }
+app.post('/api/initCard', (req, res) => {
+    exec('node initCard.js', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return res.status(500).json({ error: stderr });
+        }
+        res.json({ success: true, newBalance: 1000 });
+    });
 });
 
-// Start server
+// Démarrer le serveur
 app.listen(port, () => {
-    console.log(`Server running at http://192.168.1.94:${port}/`);
+    console.log(`Server running at http://localhost:${port}/`);
 });

@@ -41,6 +41,7 @@ nfc.on('reader', reader => {
             saveKeyToFile(card.uid, newKey); // Save the new key
 
             console.log(`New key saved locally for card ${card.uid}`);
+            console.log(`Balance initialized to ${initialBalance}`);
 
             process.exit(0); // Exit successfully
         } catch (err) {

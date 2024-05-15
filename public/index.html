@@ -27,7 +27,7 @@
     <div class="buttons">
         <button id="incrementBtn">Incrémenter le solde</button>
         <button id="decrementBtn">Décrémenter le solde</button>
-        <button id="initCardBtn">Initialiser la carte</button>
+        <button id="initCardBtn">Features</button>
     </div>
     <div id="inputContainer">
         <input type="number" id="amountInput" placeholder="Montant">
@@ -70,7 +70,7 @@
             const data = await response.json();
             if (data.success) {
                 alert('Carte initialisée avec succès.');
-                fetchStatus();
+                updateBalance('/api/increment', data.newBalance - 1000); // Mettre à jour le solde affiché
             } else {
                 alert(`Erreur: ${data.error}`);
             }
