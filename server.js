@@ -114,6 +114,33 @@ app.post('/api/decrement', async (req, res) => {
     }
 });
 
+app.post('/api/initCard', async (req, res) => {
+    if (!readerInstance) {
+        return res.status(400).json({ error: 'No NFC reader connected.' });
+    }
+    try {
+        const keyType = 0x60;
+        const defaultKey = Buffer.from('FFFFFFFFFFFF', 'hex');
+        const newKey = Buffer.from('your_new_key_here', 'hex'); // Vous devez générer cette clé quelque part
+        const blockNumber = 8; // Bloc à initialiser
+        const initialBalance = 100; // Solde initial
+        const data = Buffer.alloc(16);
+        data.writeUInt32BE(initialBalance, 0);
+
+        // Authentifier et écrire le solde initial
+        await readerInstance.authenticate(blockNumber, keyType, defaultKey);
+        await readerInstance.write(blockNumber, data, 16);
+
+        // Authentifier et écrire la nouvelle clé
+        await readerInstance.authenticate(9, keyType, defaultKey); // Modifier pour le bloc de trailer si nécessaire
+        await readerInstance.write(9, newKey, 16);
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to initialize card.', details: err.message });
+    }
+});
+
 // Start server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);

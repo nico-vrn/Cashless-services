@@ -20,6 +20,11 @@
         <p>Solde: <span id="cardBalance">N/A</span></p>
     </div>
     <div class="buttons">
+        <button id="beerBtn">Bière (5€)</button>
+        <button id="friesBtn">Frite (3€)</button>
+        <button id="othersBtn">Autres (12€)</button>
+    </div>    
+    <div class="buttons">
         <button id="incrementBtn">Incrémenter le solde</button>
         <button id="decrementBtn">Décrémenter le solde</button>
         <button id="initCardBtn">Initialiser la carte</button>
@@ -102,6 +107,24 @@
         document.getElementById('cancelInitBtn').addEventListener('click', () => {
             document.getElementById('initContainer').style.display = 'none';
         });
+
+        document.getElementById('beerBtn').addEventListener('click', () => {
+    if (confirm("Confirmez-vous l'achat d'une bière pour 5€ ?")) {
+        updateBalance('/api/decrement', 5);
+    }
+});
+
+document.getElementById('friesBtn').addEventListener('click', () => {
+    if (confirm("Confirmez-vous l'achat de frites pour 3€ ?")) {
+        updateBalance('/api/decrement', 3);
+    }
+});
+
+document.getElementById('othersBtn').addEventListener('click', () => {
+    if (confirm("Confirmez-vous l'achat d'autres articles pour 12€ ?")) {
+        updateBalance('/api/decrement', 12);
+    }
+});
 
         fetchStatus();
         setInterval(fetchStatus, 5000); // Update status every 5 seconds
