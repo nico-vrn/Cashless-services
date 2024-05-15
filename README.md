@@ -82,8 +82,7 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/nico-vrn/Cashless-services
-?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/nico-vrn/Cashless-services?style=for-the-badge
 [contributors-url]: https://github.com/nico-vrn/Cashless-services/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/nico-vrn/Cashless-services.svg?style=for-the-badge
 [forks-url]: https://github.com/nico-vrn/Cashless-services/network/members
