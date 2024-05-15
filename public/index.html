@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,7 @@
         .status { margin-bottom: 20px; }
         .balance { margin-bottom: 20px; }
         .buttons { display: flex; gap: 10px; }
+        #inputContainer, #initContainer { display: none; }
     </style>
 </head>
 <body>
@@ -21,10 +22,16 @@
     <div class="buttons">
         <button id="incrementBtn">Incrémenter le solde</button>
         <button id="decrementBtn">Décrémenter le solde</button>
+        <button id="initCardBtn">Initialiser la carte</button>
     </div>
-    <div id="inputContainer" style="display:none;">
+    <div id="inputContainer">
         <input type="number" id="amountInput" placeholder="Montant">
         <button id="submitBtn">Valider</button>
+    </div>
+    <div id="initContainer">
+        <p>Êtes-vous sûr de vouloir initialiser la carte?</p>
+        <button id="confirmInitBtn">Oui</button>
+        <button id="cancelInitBtn">Non</button>
     </div>
     <script>
         async function fetchStatus() {
@@ -50,8 +57,23 @@
             }
         }
 
+        async function initCard() {
+            const response = await fetch('/api/initCard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Carte initialisée avec succès.');
+                fetchStatus();
+            } else {
+                alert(`Erreur: ${data.error}`);
+            }
+        }
+
         document.getElementById('incrementBtn').addEventListener('click', () => {
             document.getElementById('inputContainer').style.display = 'block';
+            document.getElementById('initContainer').style.display = 'none';
             document.getElementById('submitBtn').onclick = () => {
                 const amount = parseInt(document.getElementById('amountInput').value);
                 updateBalance('/api/increment', amount);
@@ -60,10 +82,25 @@
 
         document.getElementById('decrementBtn').addEventListener('click', () => {
             document.getElementById('inputContainer').style.display = 'block';
+            document.getElementById('initContainer').style.display = 'none';
             document.getElementById('submitBtn').onclick = () => {
                 const amount = parseInt(document.getElementById('amountInput').value);
                 updateBalance('/api/decrement', amount);
             };
+        });
+
+        document.getElementById('initCardBtn').addEventListener('click', () => {
+            document.getElementById('inputContainer').style.display = 'none';
+            document.getElementById('initContainer').style.display = 'block';
+        });
+
+        document.getElementById('confirmInitBtn').addEventListener('click', () => {
+            initCard();
+            document.getElementById('initContainer').style.display = 'none';
+        });
+
+        document.getElementById('cancelInitBtn').addEventListener('click', () => {
+            document.getElementById('initContainer').style.display = 'none';
         });
 
         fetchStatus();

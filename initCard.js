@@ -1,11 +1,13 @@
 const { NFC } = require('nfc-pcsc');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 
 const nfc = new NFC();
+const keysFile = path.join(__dirname, 'keys.json');
 
+// Function to save or update key in JSON file
 const saveKeyToFile = (uid, key) => {
-    const keysFile = 'keys.json';
     let keysData = {};
     if (fs.existsSync(keysFile)) {
         keysData = JSON.parse(fs.readFileSync(keysFile));
@@ -34,17 +36,26 @@ nfc.on('reader', reader => {
             await reader.write(blockNumber, data, 16);
             console.log(`Carte initialisée avec un solde de ${initialBalance}`);
 
-            const key = crypto.randomBytes(6).toString('hex'); // Générer une clé aléatoire
-            const keyBuffer = Buffer.alloc(16); // Créer un tampon de 16 octets
-            keyBuffer.write(key, 0, 'hex'); // Écrire la clé au début du tampon
+            // Générer une clé aléatoire
+            const newKey = crypto.randomBytes(6).toString('hex'); // Générer une clé aléatoire
+            const newKeyBuffer = Buffer.alloc(16); // Créer un tampon de 16 octets
+            newKeyBuffer.write(newKey, 0, 'hex'); // Écrire la clé au début du tampon
 
-            console.log(`Tentative d'écriture de la clé sur le bloc 9...`);
+            console.log(`Tentative d'écriture de la nouvelle clé sur le bloc 9...`);
             await reader.authenticate(9, keyType, defaultKey);
-            await reader.write(9, keyBuffer, 16);
-            console.log(`Clé sécurisée écrite sur la carte`);
+            await reader.write(9, newKeyBuffer, 16);
+            console.log(`Nouvelle clé sécurisée écrite sur la carte`);
 
-            saveKeyToFile(card.uid, key);
-            console.log(`Clé sauvegardée localement pour la carte ${card.uid}`);
+            // Remplacer les clés par défaut par la nouvelle clé pour tous les secteurs
+            console.log(`Remplacement de la clé par défaut par la nouvelle clé...`);
+            for (let sector = 0; sector < 16; sector++) {
+                const block = sector * 4; // First block of each sector
+                await reader.authenticate(block, keyType, defaultKey);
+                await reader.write(block + 3, newKeyBuffer, 16); // Write new key to sector trailer
+            }
+
+            saveKeyToFile(card.uid, newKey);
+            console.log(`Nouvelle clé sauvegardée localement pour la carte ${card.uid}`);
 
             process.exit(0); // Terminer le programme
         } catch (err) {
