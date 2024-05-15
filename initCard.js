@@ -20,14 +20,14 @@ nfc.on('reader', reader => {
     reader.on('card', async card => {
         try {
             const keyType = 0x60; // A key
-            const initialKey = Buffer.from('FFFFFFFFFFFF', 'hex'); // Default key for MIFARE Classic
+            const defaultKey = Buffer.from('FFFFFFFFFFFF', 'hex'); // Default key for MIFARE Classic
             const blockNumber = 8; // Bloc à écrire
             const initialBalance = 1000; // Solde initial
             const data = Buffer.alloc(16);
             data.writeUInt32BE(initialBalance, 0);
 
             console.log(`Tentative d'authentification pour le bloc ${blockNumber}...`);
-            await reader.authenticate(blockNumber, keyType, initialKey);
+            await reader.authenticate(blockNumber, keyType, defaultKey);
             console.log(`Authentification réussie`);
 
             console.log(`Tentative d'écriture du solde initial sur le bloc ${blockNumber}...`);
@@ -39,7 +39,7 @@ nfc.on('reader', reader => {
             keyBuffer.write(key, 0, 'hex'); // Écrire la clé au début du tampon
 
             console.log(`Tentative d'écriture de la clé sur le bloc 9...`);
-            await reader.authenticate(9, keyType, initialKey);
+            await reader.authenticate(9, keyType, defaultKey);
             await reader.write(9, keyBuffer, 16);
             console.log(`Clé sécurisée écrite sur la carte`);
 
