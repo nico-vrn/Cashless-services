@@ -23,6 +23,8 @@
 
 ## À propos du projet 
 
+Ce projet est un projet personnel de cours, il à été réalisé en 5h.
+
 Ce projet implémente un système de cashless complet qui permet d'avoir une interface avec le solde de la carte quand elle est présenté sur le lecteur NFC, ainsi que d'incrémenter / décrémenter et d'initialiser de nouvelles cartes.
 
 ## Prérequis
